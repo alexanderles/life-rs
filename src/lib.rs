@@ -53,7 +53,7 @@ impl Universe {
     ///
     /// The size parameter must be less than or equal to both dimensions
     /// of the universe, and must be an odd value in order for the square
-    /// to have a valid origin. 
+    /// to have a valid origin.
     /// This function will error if either of these conditions are not met.
     fn draw_square_pattern(
         &mut self,
@@ -198,6 +198,32 @@ impl Universe {
         self.cells.set(idx, !self.cells[idx]);
     }
 
+    /// Draws a blinker centerd on the specified cell
+    /// beginning in the horizontal position if flag is set true:
+    ///
+    ///     ☐☐☐
+    ///
+    /// or in the vertical postion if flag is set false:
+    ///
+    ///       ☐
+    ///       ☐
+    ///       ☐
+    ///  
+    pub fn draw_blinker(&mut self, row: u32, column: u32, horizontal: bool) {
+        let center = (row, column);
+        if horizontal {
+            let left = (row, (column + self.width - 1) % self.width);
+            let right = (row, (column + 1) % self.width);
+            let alive_cells = vec![left, center, right];
+            self.draw_square_pattern(row, column, 3, &alive_cells)
+        } else {
+            let top = ((row + self.height - 1) % self.height, column);
+            let bottom = ((row + 1) % self.height, column);
+            let alive_cells = vec![top, center, bottom];
+            self.draw_square_pattern(row, column, 3, &alive_cells);
+        }
+    }
+
     /// Draws a glider centered on the specified cell
     /// with a trjectory up and to the right, beginning in the state:
     ///
@@ -218,6 +244,56 @@ impl Universe {
         let alive_cells = vec![top, center, right, bot_left, bot_right];
 
         self.draw_square_pattern(row, column, 3, &alive_cells);
+    }
+
+    /// Draws a pulsar centered on the specified cell
+    /// beginning in the state:
+    ///
+    ///          ☐☐☐     ☐☐☐
+    ///       ☐      ☐  ☐      ☐
+    ///       ☐      ☐  ☐      ☐
+    ///       ☐      ☐  ☐      ☐
+    ///          ☐☐☐     ☐☐☐
+    ///          ☐☐☐     ☐☐☐
+    ///       ☐      ☐  ☐      ☐
+    ///       ☐      ☐  ☐      ☐
+    ///       ☐      ☐  ☐      ☐
+    ///          ☐☐☐     ☐☐☐
+    ///
+    pub fn draw_pulsar(&mut self, row: u32, column: u32) {
+        // Horizontal blinkers
+        for center_col_offset in vec![self.width - 3, 3].iter() {
+            let center_col = (column + center_col_offset) % self.width;
+
+            // Top
+            let mut center_row = (row + self.height - 6) % self.height;
+            self.draw_blinker(center_row, center_col, true);
+
+            // Middle top
+            center_row = (row + self.height - 1) % self.height;
+            self.draw_blinker(center_row, center_col, true);
+
+            // Middle bottom
+            center_row = (row + 1) % self.height;
+            self.draw_blinker(center_row, center_col, true);
+
+            // Bottom
+            center_row = (row + 6) % self.height;
+            self.draw_blinker(center_row, center_col, true);
+        }
+
+        // Vertical blinkers
+        for center_col_offset in vec![self.width - 6, self.width - 1, 1, 6].iter() {
+            let center_col = (column + center_col_offset) % self.width;
+
+            // Top
+            let mut center_row = (row + self.height - 6) % self.height;
+            self.draw_blinker(center_row, center_col, false);
+
+            // Bottom
+            center_row = (row + 6) % self.height;
+            self.draw_blinker(center_row, center_col, false);
+        }
     }
 
     pub fn width(&self) -> u32 {

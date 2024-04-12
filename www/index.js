@@ -177,6 +177,8 @@ canvas.addEventListener("click", event => {
 
   if (event.ctrlKey) {
     universe.draw_glider(row, col);
+  } else if (event.shiftKey) {
+    universe.draw_pulsar(row, col)
   } else {
     universe.toggle_cell(row, col);
   }
