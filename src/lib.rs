@@ -210,17 +210,24 @@ impl Universe {
     ///       ☐
     ///  
     pub fn draw_blinker(&mut self, row: u32, column: u32, horizontal: bool) {
-        let center = (row, column);
+        // Draw center cell
+        let center_idx = self.get_index(row, column);
+        self.cells.set(center_idx, true);
+
         if horizontal {
-            let left = (row, (column + self.width - 1) % self.width);
-            let right = (row, (column + 1) % self.width);
-            let alive_cells = vec![left, center, right];
-            self.draw_square_pattern(row, column, 3, &alive_cells)
+            // Draw cells on either side
+            let left_idx = self.get_index(row, (column + self.width - 1) % self.width);
+            self.cells.set(left_idx, true);
+
+            let right_idx = self.get_index(row, (column + 1) % self.width);
+            self.cells.set(right_idx, true);
         } else {
-            let top = ((row + self.height - 1) % self.height, column);
-            let bottom = ((row + 1) % self.height, column);
-            let alive_cells = vec![top, center, bottom];
-            self.draw_square_pattern(row, column, 3, &alive_cells);
+            // Draw cells above and below
+            let top_idx = self.get_index((row + self.height - 1) % self.height, column);
+            self.cells.set(top_idx, true);
+
+            let bottom_idx = self.get_index((row + 1) % self.height, column);
+            self.cells.set(bottom_idx, true);
         }
     }
 
@@ -287,11 +294,11 @@ impl Universe {
             let center_col = (column + center_col_offset) % self.width;
 
             // Top
-            let mut center_row = (row + self.height - 6) % self.height;
+            let mut center_row = (row + self.height - 3) % self.height;
             self.draw_blinker(center_row, center_col, false);
 
             // Bottom
-            center_row = (row + 6) % self.height;
+            center_row = (row + 3) % self.height;
             self.draw_blinker(center_row, center_col, false);
         }
     }
