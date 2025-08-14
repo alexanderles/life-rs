@@ -21,6 +21,7 @@ pub struct Universe {
     cells: FixedBitSet,
 }
 
+/// Private methods for the universe
 impl Universe {
     /// Returns an index in the cells vector for a coordinate in the universe
     ///
@@ -78,13 +79,6 @@ impl Universe {
         size: u32,
         alive_cells: &[(u32, u32)],
     ) {
-        #[cfg(feature = "wasm")]
-        log!(
-            "Drawing square pattern at origin {}, {}",
-            origin_row,
-            origin_column
-        );
-
         if size % 2 == 0 || size > self.width || size > self.height {
             panic!("Size must be an odd value and smaller than the universe dimensions")
         }
@@ -102,26 +96,13 @@ impl Universe {
                 .iter()
                 .chain(higher_delta_range.iter())
             {
-                #[cfg(feature = "wasm")]
-                {
-                    log!("delta_row: {}", delta_row);
-                    log!("delta_col: {}", delta_col);
-                }
-
                 let cell_row = (origin_row + delta_row) % self.height;
                 let cell_col = (origin_column + delta_col) % self.width;
                 let idx = self.get_index(cell_row, cell_col);
 
-                #[cfg(feature = "wasm")]
-                log!("Looking at cell {}, {}", cell_row, cell_col);
-
                 if alive_cells.contains(&(cell_row, cell_col)) {
-                    #[cfg(feature = "wasm")]
-                    log!("alive!");
                     self.cells.set(idx, true);
                 } else {
-                    #[cfg(feature = "wasm")]
-                    log!("dead!");
                     self.cells.set(idx, false);
                 }
             }
@@ -129,7 +110,7 @@ impl Universe {
     }
 }
 
-/// Public methods, exported to JavaScript when WASM feature is enabled
+/// Public methods for the universe
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 impl Universe {
     /// Creates a new empty Universe with default 64x64 dimensions
@@ -252,6 +233,92 @@ impl Universe {
         self.to_string()
     }
 
+    /// Returns the width of the universe
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+
+    /// Sets the width of the universe and resets all cells
+    ///
+    /// # Arguments
+    ///
+    /// * `width` - The new width of the universe
+    pub fn set_width(&mut self, width: u32) {
+        self.width = width;
+        let size = (width * self.height) as usize;
+        self.cells = FixedBitSet::with_capacity(size);
+    }
+
+    /// Returns the height of the universe
+    pub fn height(&self) -> u32 {
+        self.height
+    }
+
+    /// Sets the height of the universe and resets all cells
+    ///
+    /// # Arguments
+    ///
+    /// * `height` - The new height of the universe
+    pub fn set_height(&mut self, height: u32) {
+        self.height = height;
+        let size = (self.width * height) as usize;
+        self.cells = FixedBitSet::with_capacity(size);
+    }
+
+    /// Returns a pointer to the cells data for WASM interop
+    #[cfg(feature = "wasm")]
+    pub fn cells(&self) -> *const u32 {
+        self.cells.as_slice().as_ptr() as *const u32
+    }
+
+    /// Get the dead and alive values of the entire universe.
+    pub fn get_cells(&self) -> &FixedBitSet {
+        &self.cells
+    }
+
+    /// Set a cell to be alive or dead at the given coordinates
+    ///
+    /// # Arguments
+    ///
+    /// * `row` - The row coordinate
+    /// * `column` - The column coordinate
+    /// * `alive` - Whether the cell should be alive or dead
+    pub fn set_cell(&mut self, row: u32, column: u32, alive: bool) {
+        let idx = self.get_index(row, column);
+        self.cells.set(idx, alive);
+    }
+
+    /// Set cells to be alive in a universe by passing the row and column
+    /// of each cell in an array
+    ///
+    /// # Arguments
+    ///
+    /// * `cells` - Vector of (row, col) coordinates for cells to set alive
+    pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
+        for (row, col) in cells.iter().cloned() {
+            let idx = self.get_index(row, col);
+            self.cells.set(idx, true);
+        }
+    }
+
+    /// Check if a cell is alive at the given coordinates
+    ///
+    /// # Arguments
+    ///
+    /// * `row` - The row coordinate
+    /// * `column` - The column coordinate
+    ///
+    /// # Returns
+    ///
+    /// `true` if the cell is alive, `false` otherwise
+    pub fn is_cell_alive(&self, row: u32, column: u32) -> bool {
+        let idx = self.get_index(row, column);
+        self.cells[idx]
+    }
+}
+
+/// Public methods for drawing patterns
+impl Universe {
     /// Toggles the state of a single cell
     ///
     /// # Arguments
@@ -392,44 +459,6 @@ impl Universe {
             self.draw_blinker(center_row, center_col, false);
         }
     }
-
-    /// Returns the width of the universe
-    pub fn width(&self) -> u32 {
-        self.width
-    }
-
-    /// Sets the width of the universe and resets all cells
-    ///
-    /// # Arguments
-    ///
-    /// * `width` - The new width of the universe
-    pub fn set_width(&mut self, width: u32) {
-        self.width = width;
-        let size = (width * self.height) as usize;
-        self.cells = FixedBitSet::with_capacity(size);
-    }
-
-    /// Returns the height of the universe
-    pub fn height(&self) -> u32 {
-        self.height
-    }
-
-    /// Sets the height of the universe and resets all cells
-    ///
-    /// # Arguments
-    ///
-    /// * `height` - The new height of the universe
-    pub fn set_height(&mut self, height: u32) {
-        self.height = height;
-        let size = (self.width * height) as usize;
-        self.cells = FixedBitSet::with_capacity(size);
-    }
-
-    /// Returns a pointer to the cells data for WASM interop
-    #[cfg(feature = "wasm")]
-    pub fn cells(&self) -> *const u32 {
-        self.cells.as_slice().as_ptr() as *const u32
-    }
 }
 
 impl fmt::Display for Universe {
@@ -443,53 +472,6 @@ impl fmt::Display for Universe {
         }
 
         Ok(())
-    }
-}
-
-impl Universe {
-    /// Get the dead and alive values of the entire universe.
-    pub fn get_cells(&self) -> &FixedBitSet {
-        &self.cells
-    }
-
-    /// Set cells to be alive in a universe by passing the row and column
-    /// of each cell in an array
-    ///
-    /// # Arguments
-    ///
-    /// * `cells` - Vector of (row, col) coordinates for cells to set alive
-    pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
-        for (row, col) in cells.iter().cloned() {
-            let idx = self.get_index(row, col);
-            self.cells.set(idx, true);
-        }
-    }
-
-    /// Check if a cell is alive at the given coordinates
-    ///
-    /// # Arguments
-    ///
-    /// * `row` - The row coordinate
-    /// * `column` - The column coordinate
-    ///
-    /// # Returns
-    ///
-    /// `true` if the cell is alive, `false` otherwise
-    pub fn is_cell_alive(&self, row: u32, column: u32) -> bool {
-        let idx = self.get_index(row, column);
-        self.cells[idx]
-    }
-
-    /// Set a cell to be alive or dead at the given coordinates
-    ///
-    /// # Arguments
-    ///
-    /// * `row` - The row coordinate
-    /// * `column` - The column coordinate
-    /// * `alive` - Whether the cell should be alive or dead
-    pub fn set_cell(&mut self, row: u32, column: u32, alive: bool) {
-        let idx = self.get_index(row, column);
-        self.cells.set(idx, alive);
     }
 }
 
@@ -536,7 +518,7 @@ mod tests {
     }
 
     #[test]
-    fn test_blinker_pattern() {
+    fn test_draw_blinker() {
         let mut universe = Universe::new_empty(10, 10);
         universe.draw_blinker(5, 5, true); // Horizontal blinker
 
@@ -544,5 +526,120 @@ mod tests {
         assert!(universe.is_cell_alive(5, 4)); // Left cell
         assert!(universe.is_cell_alive(5, 5)); // Center cell
         assert!(universe.is_cell_alive(5, 6)); // Right cell
+    }
+
+    #[test]
+    fn test_draw_glider() {
+        let mut universe = Universe::new_empty(10, 10);
+        universe.draw_glider(5, 5);
+
+        // Check that the glider pattern is drawn correctly
+        assert!(universe.is_cell_alive(4, 5)); // Top cell
+        assert!(universe.is_cell_alive(5, 5)); // Center cell
+        assert!(universe.is_cell_alive(5, 6)); // Right cell
+        assert!(universe.is_cell_alive(6, 4)); // Bottom left cell
+        assert!(universe.is_cell_alive(6, 6)); // Bottom right cell
+
+        // Check that other cells around the pattern are dead
+        assert!(!universe.is_cell_alive(4, 4)); // Top left
+        assert!(!universe.is_cell_alive(4, 6)); // Top right
+        assert!(!universe.is_cell_alive(5, 4)); // Center left
+        assert!(!universe.is_cell_alive(6, 5)); // Bottom center
+    }
+
+    #[test]
+    fn test_draw_glider_wrapping() {
+        let mut universe = Universe::new_empty(5, 5);
+        universe.draw_glider(0, 0); // Test at edge with wrapping
+
+        // Check that the glider pattern wraps correctly at the edges
+        assert!(universe.is_cell_alive(4, 0)); // Top cell (wrapped)
+        assert!(universe.is_cell_alive(0, 0)); // Center cell
+        assert!(universe.is_cell_alive(0, 1)); // Right cell
+        assert!(universe.is_cell_alive(1, 4)); // Bottom left cell (wrapped)
+        assert!(universe.is_cell_alive(1, 1)); // Bottom right cell
+    }
+
+    #[test]
+    fn test_glider_evolution() {
+        let mut universe = Universe::new_empty(10, 10);
+        universe.draw_glider(5, 5);
+
+        // Count initial alive cells
+        let initial_alive = universe.get_cells().count_ones(..);
+        assert_eq!(initial_alive, 5);
+
+        // Tick the universe and verify the glider moves
+        universe.tick();
+
+        // After one tick, the glider should still have 5 cells but in a different position
+        let after_tick_alive = universe.get_cells().count_ones(..);
+        assert_eq!(after_tick_alive, 5);
+
+        // The pattern should have moved (we can't easily test exact positions due to wrapping)
+        // but we can verify it's not in the same exact position
+        assert!(!universe.is_cell_alive(5, 5)); // Center should no longer be alive
+    }
+
+    #[test]
+    fn test_draw_pulsar() {
+        let mut universe = Universe::new_empty(20, 20);
+        universe.draw_pulsar(10, 10);
+
+        // Check horizontal blinkers (top and bottom sections)
+        // Top horizontal blinker - spans columns 7-8 and 12-13
+        assert!(universe.is_cell_alive(4, 7)); // Left part
+        assert!(universe.is_cell_alive(4, 8)); // Left part
+        assert!(!universe.is_cell_alive(4, 9)); // Gap
+        assert!(!universe.is_cell_alive(4, 10)); // Gap
+        assert!(!universe.is_cell_alive(4, 11)); // Gap
+        assert!(universe.is_cell_alive(4, 12)); // Right part
+        assert!(universe.is_cell_alive(4, 13)); // Right part
+
+        // Bottom horizontal blinker - spans columns 7-8 and 12-13
+        assert!(universe.is_cell_alive(16, 7)); // Left part
+        assert!(universe.is_cell_alive(16, 8)); // Left part
+        assert!(!universe.is_cell_alive(16, 9)); // Gap
+        assert!(!universe.is_cell_alive(16, 10)); // Gap
+        assert!(!universe.is_cell_alive(16, 11)); // Gap
+        assert!(universe.is_cell_alive(16, 12)); // Right part
+        assert!(universe.is_cell_alive(16, 13)); // Right part
+
+        // Check vertical blinkers (left and right sections)
+        // Left vertical blinker - spans rows 7-8 and 13
+        assert!(universe.is_cell_alive(7, 4)); // Top part
+        assert!(universe.is_cell_alive(8, 4)); // Top part
+        assert!(!universe.is_cell_alive(9, 4)); // Gap
+        assert!(universe.is_cell_alive(13, 4)); // Bottom part
+
+        // Right vertical blinker - spans rows 7-8 and 13
+        assert!(universe.is_cell_alive(7, 16)); // Top part
+        assert!(universe.is_cell_alive(8, 16)); // Top part
+        assert!(!universe.is_cell_alive(9, 16)); // Gap
+        assert!(universe.is_cell_alive(13, 16)); // Bottom part
+
+        // Check that the center area is empty
+        assert!(!universe.is_cell_alive(10, 10)); // Center should be empty
+        assert!(!universe.is_cell_alive(9, 9)); // Near center should be empty
+        assert!(!universe.is_cell_alive(11, 11)); // Near center should be empty
+    }
+
+    #[test]
+    fn test_pulsar_oscillation() {
+        let mut universe = Universe::new_empty(20, 20);
+        universe.draw_pulsar(10, 10);
+
+        // Count initial alive cells
+        let initial_alive = universe.get_cells().count_ones(..);
+        assert_eq!(initial_alive, 48); // Pulsar has 48 cells in its pattern
+
+        // Tick the universe multiple times to test oscillation
+        for _ in 0..3 {
+            universe.tick();
+        }
+
+        // After 3 ticks, the pulsar should return to its original state
+        let after_3_ticks_alive = universe.get_cells().count_ones(..);
+        assert_eq!(after_3_ticks_alive, 48);
     }
 }
