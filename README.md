@@ -168,5 +168,5 @@ To disable WASM features for pure Rust usage:
 
 ```toml
 [dependencies]
-life-rs = { git = "https://github.com/yourusername/life-rs", default-features = false }
+life-rs = { git = "https://github.com/alexanderles/life-rs", default-features = false }
 ```
