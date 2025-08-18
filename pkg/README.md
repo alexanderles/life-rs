@@ -29,16 +29,55 @@ Or for local development:
 life-rs = { path = "../life-rs" }
 ```
 
-### For WebAssembly Usage
+### As a JavaScript/TypeScript Dependency
+
+#### Next.js/React (Recommended)
+Add to `package.json`:
+
+```json
+{
+  "dependencies": {
+    "life-rs": "git+https://github.com/alexanderles/life-rs.git"
+  }
+}
+```
+
+Then install:
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+#### Direct Browser Usage
+```html
+<script type="module">
+  import { Universe } from 'https://github.com/alexanderles/life-rs.git';
+  // ... use Universe
+</script>
+```
+
+### For WebAssembly Development
 
 1. **Install wasm-pack** (if not already installed):
    ```bash
    cargo install wasm-pack
    ```
 
-2. **Build the WASM package**:
+2. **Build all WASM targets**:
    ```bash
-   wasm-pack build --target web --features wasm
+   npm run build
+   ```
+
+   Or build individual targets:
+   ```bash
+   # Build for web browsers
+   npm run build:web
+   
+   # Build for Node.js
+   npm run build:node
    ```
 
 3. **Use in your web project**:
@@ -87,38 +126,43 @@ fn main() {
 
 ### WebAssembly Usage
 
-```javascript
-import init, { Universe } from './life_rs.js';
+```typescript
+import { Universe } from 'life-rs';
 
-async function main() {
-    // Initialize the WASM module
-    await init();
-    
-    // Create a new empty universe
-    const universe = Universe.new();
-    
-    // Or create empty universe with custom dimensions
-    const universe = Universe.new_empty(100, 100);
-    
-    // Create universe with random cells
-    const universe = Universe.new_random(100, 100);
-    
-    // Run simulation
-    for (let i = 0; i < 10; i++) {
-        universe.tick();
-        console.log(universe.render());
-    }
-    
-    // Manipulate cells
-    universe.toggle_cell(5, 5);
-    
-    // Draw patterns
-    universe.draw_blinker(10, 10, true);
-    universe.draw_glider(20, 20);
-    universe.draw_pulsar(30, 30);
+// Create a new universe with random cells
+const universe = Universe.new_random(100, 100);
+
+// Run simulation
+for (let i = 0; i < 10; i++) {
+    universe.tick();
+    console.log(universe.render());
 }
 
-main();
+// Manipulate cells
+universe.toggle_cell(5, 5);
+
+// Draw patterns
+universe.draw_blinker(10, 10, true);
+universe.draw_glider(20, 20);
+universe.draw_pulsar(30, 30);
+```
+
+#### Direct Browser Usage
+```html
+<script type="module">
+  import { Universe } from 'https://github.com/alexanderles/life-rs.git';
+  
+  const universe = Universe.new_random(100, 100);
+  // ... use universe
+</script>
+```
+
+#### Node.js Usage
+```javascript
+const { Universe } = require('life-rs');
+
+const universe = Universe.new_random(100, 100);
+// ... use universe
 ```
 
 ## Building
@@ -133,14 +177,14 @@ cargo test
 ### For WebAssembly
 
 ```bash
-# Build for web
-wasm-pack build --target web --features wasm
+# Build all targets
+npm run build
+
+# Build for web browsers
+npm run build:web
 
 # Build for Node.js
-wasm-pack build --target nodejs --features wasm
-
-# Build for bundlers (webpack, etc.)
-wasm-pack build --target bundler --features wasm
+npm run build:node
 ```
 
 ### Development
@@ -149,13 +193,23 @@ wasm-pack build --target bundler --features wasm
 # Run tests
 cargo test
 
-# Run WASM tests (requires --features wasm flag)
-wasm-pack test --headless --firefox --features wasm
-wasm-pack test --headless --chrome --features wasm
+# Run WASM tests
+wasm-pack test --headless --firefox
+wasm-pack test --headless --chrome
 
 # Check documentation
 cargo doc --open
 ```
+
+## Package Structure
+
+This package provides multiple targets for different environments:
+
+- **Web Target** (`pkg/`) - For browsers and ES modules
+- **Node.js Target** (`pkg-nodejs/`) - For Node.js and CommonJS
+- **Bundler Target** - Uses web target for bundlers (webpack, vite, etc.)
+
+The package automatically selects the appropriate target based on your environment.
 
 ## Features
 
