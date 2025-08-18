@@ -15,7 +15,7 @@ The simulation follows these rules:
 
 ### As a Rust Dependency
 
-Add to your `Cargo.toml`:
+Add to `Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -38,7 +38,7 @@ life-rs = { path = "../life-rs" }
 
 2. **Build the WASM package**:
    ```bash
-   wasm-pack build --target web
+   wasm-pack build --target web --features wasm
    ```
 
 3. **Use in your web project**:
@@ -134,13 +134,13 @@ cargo test
 
 ```bash
 # Build for web
-wasm-pack build --target web
+wasm-pack build --target web --features wasm
 
 # Build for Node.js
-wasm-pack build --target nodejs
+wasm-pack build --target nodejs --features wasm
 
 # Build for bundlers (webpack, etc.)
-wasm-pack build --target bundler
+wasm-pack build --target bundler --features wasm
 ```
 
 ### Development
@@ -149,9 +149,9 @@ wasm-pack build --target bundler
 # Run tests
 cargo test
 
-# Run WASM tests
-wasm-pack test --headless --firefox
-wasm-pack test --headless --chrome
+# Run WASM tests (requires --features wasm flag)
+wasm-pack test --headless --firefox --features wasm
+wasm-pack test --headless --chrome --features wasm
 
 # Check documentation
 cargo doc --open

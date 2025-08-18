@@ -3,7 +3,7 @@ use rand::Rng;
 use std::fmt;
 
 #[cfg(feature = "wasm")]
-use wasm_bindgen::prelude::wasm_bindgen;
+use {js_sys, wasm_bindgen::prelude::wasm_bindgen, wasm_bindgen::JsCast};
 
 #[cfg(feature = "wasm")]
 extern crate web_sys;
@@ -150,19 +150,6 @@ impl Universe {
         universe
     }
 
-    /// Creates a new Universe with specified dimensions and initial pattern
-    ///
-    /// # Arguments
-    ///
-    /// * `width` - The width of the universe
-    /// * `height` - The height of the universe
-    /// * `alive_cells` - Vector of (row, col) coordinates for initially alive cells
-    pub fn new_with_pattern(width: u32, height: u32, alive_cells: Vec<(u32, u32)>) -> Universe {
-        let mut universe = Self::new_empty(width, height);
-        universe.set_cells(&alive_cells);
-        universe
-    }
-
     /// Updates the universe's cells for a single tick
     ///
     /// Implements rules based on Conway's Game of Life:
@@ -271,11 +258,6 @@ impl Universe {
         self.cells.as_slice().as_ptr() as *const u32
     }
 
-    /// Get the dead and alive values of the entire universe.
-    pub fn get_cells(&self) -> &FixedBitSet {
-        &self.cells
-    }
-
     /// Set a cell to be alive or dead at the given coordinates
     ///
     /// # Arguments
@@ -286,19 +268,6 @@ impl Universe {
     pub fn set_cell(&mut self, row: u32, column: u32, alive: bool) {
         let idx = self.get_index(row, column);
         self.cells.set(idx, alive);
-    }
-
-    /// Set cells to be alive in a universe by passing the row and column
-    /// of each cell in an array
-    ///
-    /// # Arguments
-    ///
-    /// * `cells` - Vector of (row, col) coordinates for cells to set alive
-    pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
-        for (row, col) in cells.iter().cloned() {
-            let idx = self.get_index(row, col);
-            self.cells.set(idx, true);
-        }
     }
 
     /// Check if a cell is alive at the given coordinates
@@ -314,6 +283,83 @@ impl Universe {
     pub fn is_cell_alive(&self, row: u32, column: u32) -> bool {
         let idx = self.get_index(row, column);
         self.cells[idx]
+    }
+
+    // WASM-specific methods for pattern creation
+    #[cfg(feature = "wasm")]
+    pub fn new_with_pattern_wasm(width: u32, height: u32, alive_cells: js_sys::Array) -> Universe {
+        let mut universe = Self::new_empty(width, height);
+
+        for i in 0..alive_cells.length() {
+            if let Ok(cell_array) = alive_cells.get(i).dyn_into::<js_sys::Array>() {
+                if cell_array.length() == 2 {
+                    if let (Some(row), Some(col)) = (
+                        cell_array.get(0).as_f64().map(|x| x as u32),
+                        cell_array.get(1).as_f64().map(|x| x as u32),
+                    ) {
+                        universe.set_cell(row, col, true);
+                    }
+                }
+            }
+        }
+
+        universe
+    }
+
+    #[cfg(feature = "wasm")]
+    pub fn set_cells_wasm(&mut self, alive_cells: js_sys::Array) {
+        for i in 0..alive_cells.length() {
+            if let Ok(cell_array) = alive_cells.get(i).dyn_into::<js_sys::Array>() {
+                if cell_array.length() == 2 {
+                    if let (Some(row), Some(col)) = (
+                        cell_array.get(0).as_f64().map(|x| x as u32),
+                        cell_array.get(1).as_f64().map(|x| x as u32),
+                    ) {
+                        self.set_cell(row, col, true);
+                    }
+                }
+            }
+        }
+    }
+
+    // WASM-compatible method for testing - returns a Vec<u32> representation of cells
+    #[cfg(feature = "wasm")]
+    pub fn get_cells_wasm(&self) -> Vec<u32> {
+        self.cells.as_slice().iter().map(|&x| x as u32).collect()
+    }
+}
+
+// Non-WASM methods (available in both native and WASM builds)
+impl Universe {
+    /// Creates a new Universe with specified dimensions and initial pattern
+    ///
+    /// # Arguments
+    ///
+    /// * `width` - The width of the universe
+    /// * `height` - The height of the universe
+    /// * `alive_cells` - Vector of (row, col) coordinates for initially alive cells
+    pub fn new_with_pattern(width: u32, height: u32, alive_cells: Vec<(u32, u32)>) -> Universe {
+        let mut universe = Self::new_empty(width, height);
+        universe.set_cells(&alive_cells);
+        universe
+    }
+
+    /// Get the dead and alive values of the entire universe.
+    pub fn get_cells(&self) -> &FixedBitSet {
+        &self.cells
+    }
+
+    /// Set cells to be alive in a universe by passing the row and column
+    /// of each cell in an array
+    ///
+    /// # Arguments
+    ///
+    /// * `cells` - Vector of (row, col) coordinates for cells to set alive
+    pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
+        for (row, col) in cells.iter().cloned() {
+            let idx = self.get_index(row, col);
+            self.cells.set(idx, true);
+        }
     }
 }
 
