@@ -1,0 +1,16 @@
+{
+    "name": "life-rs",
+    "version": "0.1.0",
+    "description": "Conway's Game of Life implementation in Rust with WebAssembly support",
+    "main": "pkg/life_rs.js",
+    "types": "pkg/life_rs.d.ts",
+    "files": [
+        "pkg/"
+    ],
+    "scripts": {
+        "build": "wasm-pack build --target web",
+        "build:node": "wasm-pack build --target nodejs",
+        "build:bundler": "wasm-pack build --target bundler"
+    },
+    "author": "Alex Les <alexlesismore@gmail.com>"
+}

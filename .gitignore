@@ -4,7 +4,6 @@
 Cargo.lock
 
 # WASM build artifacts
-pkg/
 wasm-pack.log
 
 # IDE and editor files
