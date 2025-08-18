@@ -19,20 +19,18 @@
             "types": "./pkg-nodejs/life_rs.d.ts"
         },
         "./bundler": {
-            "import": "./pkg-bundler/life_rs.js",
-            "types": "./pkg-bundler/life_rs.d.ts"
+            "import": "./pkg/life_rs.js",
+            "types": "./pkg/life_rs.d.ts"
         }
     },
     "files": [
         "pkg/",
-        "pkg-nodejs/",
-        "pkg-bundler/"
+        "pkg-nodejs/"
     ],
     "scripts": {
-        "build": "npm run build:web && npm run build:node && npm run build:bundler",
+        "build": "npm run build:web && npm run build:node",
         "build:web": "wasm-pack build --target web --out-dir pkg",
-        "build:node": "wasm-pack build --target nodejs --out-dir pkg-nodejs",
-        "build:bundler": "wasm-pack build --target bundler --out-dir pkg-bundler"
+        "build:node": "wasm-pack build --target nodejs --out-dir pkg-nodejs"
     },
     "author": "Alex Les <alexlesismore@gmail.com>"
 }
