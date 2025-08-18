@@ -1,6 +1,5 @@
 {
   "name": "life-rs",
-  "type": "module",
   "collaborators": [
     "Alex Les <alexlesismore@gmail.com>"
   ],
@@ -12,8 +11,5 @@
     "life_rs.d.ts"
   ],
   "main": "life_rs.js",
-  "types": "life_rs.d.ts",
-  "sideEffects": [
-    "./snippets/*"
-  ]
+  "types": "life_rs.d.ts"
 }

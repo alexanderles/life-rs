@@ -2,15 +2,37 @@
     "name": "life-rs",
     "version": "0.1.0",
     "description": "Conway's Game of Life implementation in Rust with WebAssembly support",
-    "main": "pkg/life_rs.js",
-    "types": "pkg/life_rs.d.ts",
+    "main": "./pkg/life_rs.js",
+    "types": "./pkg/life_rs.d.ts",
+    "exports": {
+        ".": {
+            "import": "./pkg/life_rs.js",
+            "require": "./pkg-nodejs/life_rs.js",
+            "types": "./pkg/life_rs.d.ts"
+        },
+        "./web": {
+            "import": "./pkg/life_rs.js",
+            "types": "./pkg/life_rs.d.ts"
+        },
+        "./node": {
+            "require": "./pkg-nodejs/life_rs.js",
+            "types": "./pkg-nodejs/life_rs.d.ts"
+        },
+        "./bundler": {
+            "import": "./pkg-bundler/life_rs.js",
+            "types": "./pkg-bundler/life_rs.d.ts"
+        }
+    },
     "files": [
-        "pkg/"
+        "pkg/",
+        "pkg-nodejs/",
+        "pkg-bundler/"
     ],
     "scripts": {
-        "build": "wasm-pack build --target web",
-        "build:node": "wasm-pack build --target nodejs",
-        "build:bundler": "wasm-pack build --target bundler"
+        "build": "npm run build:web && npm run build:node && npm run build:bundler",
+        "build:web": "wasm-pack build --target web --out-dir pkg",
+        "build:node": "wasm-pack build --target nodejs --out-dir pkg-nodejs",
+        "build:bundler": "wasm-pack build --target bundler --out-dir pkg-bundler"
     },
     "author": "Alex Les <alexlesismore@gmail.com>"
 }
