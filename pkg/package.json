@@ -9,13 +9,11 @@
   "files": [
     "life_rs_bg.wasm",
     "life_rs.js",
-    "life_rs_bg.js",
     "life_rs.d.ts"
   ],
   "main": "life_rs.js",
   "types": "life_rs.d.ts",
   "sideEffects": [
-    "./life_rs.js",
     "./snippets/*"
   ]
 }

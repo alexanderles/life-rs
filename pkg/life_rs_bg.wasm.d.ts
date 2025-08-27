@@ -19,6 +19,10 @@ export const universe_is_cell_alive: (a: number, b: number, c: number) => number
 export const universe_new_with_pattern_wasm: (a: number, b: number, c: any) => number;
 export const universe_set_cells_wasm: (a: number, b: any) => void;
 export const universe_get_cells_wasm: (a: number) => [number, number];
+export const universe_toggle_cell: (a: number, b: number, c: number) => void;
+export const universe_draw_blinker: (a: number, b: number, c: number, d: number) => void;
+export const universe_draw_glider: (a: number, b: number, c: number) => void;
+export const universe_draw_pulsar: (a: number, b: number, c: number) => void;
 export const __wbindgen_exn_store: (a: number) => void;
 export const __externref_table_alloc: () => number;
 export const __wbindgen_export_2: WebAssembly.Table;

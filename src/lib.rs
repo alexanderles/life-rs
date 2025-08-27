@@ -364,6 +364,7 @@ impl Universe {
 }
 
 /// Public methods for drawing patterns
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 impl Universe {
     /// Toggles the state of a single cell
     ///

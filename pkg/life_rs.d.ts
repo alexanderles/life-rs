@@ -107,4 +107,135 @@ export class Universe {
   static new_with_pattern_wasm(width: number, height: number, alive_cells: Array<any>): Universe;
   set_cells_wasm(alive_cells: Array<any>): void;
   get_cells_wasm(): Uint32Array;
+  /**
+   * Toggles the state of a single cell
+   *
+   * # Arguments
+   *
+   * * `row` - The row coordinate of the cell to toggle
+   * * `column` - The column coordinate of the cell to toggle
+   */
+  toggle_cell(row: number, column: number): void;
+  /**
+   * Draws a blinker pattern centered on the specified cell
+   * A blinker is a simple oscillator that alternates between horizontal and vertical states.
+   *
+   * # Arguments
+   *
+   * * `row` - The row coordinate of the pattern center
+   * * `column` - The column coordinate of the pattern center
+   * * `horizontal` - If true, creates horizontal blinker, otherwise vertical
+   *
+   * Horizontal blinker:
+   * ```
+   * ☐☐☐
+   * ```
+   *
+   * Vertical blinker:
+   * ```
+   * ☐
+   * ☐
+   * ☐
+   * ```
+   */
+  draw_blinker(row: number, column: number, horizontal: boolean): void;
+  /**
+   * Draws a glider pattern centered on the specified cell
+   *
+   * A glider is a pattern that moves diagonally across the universe.
+   *
+   * # Arguments
+   *
+   * * `row` - The row coordinate of the pattern center
+   * * `column` - The column coordinate of the pattern center
+   *
+   * Initial state:
+   * ```
+   *   ☐
+   *     ☐ ☐
+   *   ☐   ☐
+   * ```
+   */
+  draw_glider(row: number, column: number): void;
+  /**
+   * Draws a pulsar pattern centered on the specified cell
+   *
+   * A pulsar is a period-3 oscillator that creates a complex pattern.
+   *
+   * # Arguments
+   *
+   * * `row` - The row coordinate of the pattern center
+   * * `column` - The column coordinate of the pattern center
+   *
+   * Initial state:
+   * ```
+   *          ☐☐☐     ☐☐☐
+   *       ☐      ☐  ☐      ☐
+   *       ☐      ☐  ☐      ☐
+   *       ☐      ☐  ☐      ☐
+   *          ☐☐☐     ☐☐☐
+   *          ☐☐☐     ☐☐☐
+   *       ☐      ☐  ☐      ☐
+   *       ☐      ☐  ☐      ☐
+   *       ☐      ☐  ☐      ☐
+   *          ☐☐☐     ☐☐☐
+   * ```
+   */
+  draw_pulsar(row: number, column: number): void;
 }
+
+export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
+
+export interface InitOutput {
+  readonly memory: WebAssembly.Memory;
+  readonly __wbg_universe_free: (a: number, b: number) => void;
+  readonly universe_new: () => number;
+  readonly universe_new_empty: (a: number, b: number) => number;
+  readonly universe_new_random: (a: number, b: number) => number;
+  readonly universe_tick: (a: number) => void;
+  readonly universe_clear: (a: number) => void;
+  readonly universe_randomize: (a: number) => void;
+  readonly universe_render: (a: number) => [number, number];
+  readonly universe_width: (a: number) => number;
+  readonly universe_set_width: (a: number, b: number) => void;
+  readonly universe_height: (a: number) => number;
+  readonly universe_set_height: (a: number, b: number) => void;
+  readonly universe_cells: (a: number) => number;
+  readonly universe_set_cell: (a: number, b: number, c: number, d: number) => void;
+  readonly universe_is_cell_alive: (a: number, b: number, c: number) => number;
+  readonly universe_new_with_pattern_wasm: (a: number, b: number, c: any) => number;
+  readonly universe_set_cells_wasm: (a: number, b: any) => void;
+  readonly universe_get_cells_wasm: (a: number) => [number, number];
+  readonly universe_toggle_cell: (a: number, b: number, c: number) => void;
+  readonly universe_draw_blinker: (a: number, b: number, c: number, d: number) => void;
+  readonly universe_draw_glider: (a: number, b: number, c: number) => void;
+  readonly universe_draw_pulsar: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_exn_store: (a: number) => void;
+  readonly __externref_table_alloc: () => number;
+  readonly __wbindgen_export_2: WebAssembly.Table;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_malloc: (a: number, b: number) => number;
+  readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbindgen_start: () => void;
+}
+
+export type SyncInitInput = BufferSource | WebAssembly.Module;
+/**
+* Instantiates the given `module`, which can either be bytes or
+* a precompiled `WebAssembly.Module`.
+*
+* @param {{ module: SyncInitInput }} module - Passing `SyncInitInput` directly is deprecated.
+*
+* @returns {InitOutput}
+*/
+export function initSync(module: { module: SyncInitInput } | SyncInitInput): InitOutput;
+
+/**
+* If `module_or_path` is {RequestInfo} or {URL}, makes a request and
+* for everything else, calls `WebAssembly.instantiate` directly.
+*
+* @param {{ module_or_path: InitInput | Promise<InitInput> }} module_or_path - Passing `InitInput` directly is deprecated.
+*
+* @returns {Promise<InitOutput>}
+*/
+export default function __wbg_init (module_or_path?: { module_or_path: InitInput | Promise<InitInput> } | InitInput | Promise<InitInput>): Promise<InitOutput>;

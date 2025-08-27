@@ -29,8 +29,8 @@
     ],
     "scripts": {
         "build": "npm run build:web && npm run build:node",
-        "build:web": "wasm-pack build --target web --out-dir pkg",
-        "build:node": "wasm-pack build --target nodejs --out-dir pkg-nodejs"
+        "build:web": "wasm-pack build --target web --out-dir pkg -- --features wasm",
+        "build:node": "wasm-pack build --target nodejs --out-dir pkg-nodejs -- --features wasm"
     },
     "author": "Alex Les <alexlesismore@gmail.com>"
 }
